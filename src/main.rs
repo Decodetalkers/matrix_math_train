@@ -1,6 +1,6 @@
 use std::ops::{Add, AddAssign, Div, Index, IndexMut, Mul, Sub, SubAssign};
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 struct Matrix<T, const X: usize, const Y: usize>
 where
     T: Add<Output = T>
@@ -43,6 +43,54 @@ where
 
     fn get_matrix(&mut self) -> &mut [[T; X]; Y] {
         &mut self.inner
+    }
+}
+
+impl<T, const X: usize, const Y: usize> Mul<T> for Matrix<T, X, Y>
+where
+    T: Add<Output = T>
+        + Div<Output = T>
+        + Mul<Output = T>
+        + Sub<Output = T>
+        + SubAssign
+        + AddAssign
+        + Default
+        + Copy,
+{
+    type Output = Matrix<T, X, Y>;
+    fn mul(self, rhs: T) -> Self::Output {
+        let mut output = self.clone();
+        let matrix = output.get_matrix();
+        for x in 0..X {
+            for y in 0..Y {
+                matrix[y][x] = self.inner[y][x] * rhs;
+            }
+        }
+        output
+    }
+}
+
+impl<T, const X: usize, const Y: usize> Add<Matrix<T, X, Y>> for Matrix<T, X, Y>
+where
+    T: Add<Output = T>
+        + Div<Output = T>
+        + Mul<Output = T>
+        + Sub<Output = T>
+        + SubAssign
+        + AddAssign
+        + Default
+        + Copy,
+{
+    type Output = Matrix<T, X, Y>;
+    fn add(self, rhs: Matrix<T, X, Y>) -> Self::Output {
+        let mut output = self.clone();
+        let matrix = output.get_matrix();
+        for x in 0..X {
+            for y in 0..Y {
+                matrix[y][x] = self.inner[y][x] + rhs.inner[y][x];
+            }
+        }
+        output
     }
 }
 
@@ -115,10 +163,14 @@ where
 fn main() {
     let a: Matrix<i32, 3, 2> = Matrix::new([[1, 2, 3], [4, 5, 6]]);
     let mut b: Matrix<i32, 2, 3> = Matrix::new([[10, 5], [20, 6], [30, 7]]);
+    let b2: Matrix<i32, 2, 3> = Matrix::new([[10, 5], [20, 6], [30, 7]]);
 
+    println!("{:?}", b + b2);
     println!("{}", b[[0, 1]]);
     b[[0, 0]] = 100;
     println!("{}", b[[0, 0]]);
+    println!("{:?}", b * 20);
+    println!("{:?}", b);
 
     println!("{:?}", a * b);
 }
