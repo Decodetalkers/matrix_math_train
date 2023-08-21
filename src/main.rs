@@ -94,6 +94,30 @@ where
     }
 }
 
+impl<T, const X: usize, const Y: usize> Sub<Matrix<T, X, Y>> for Matrix<T, X, Y>
+where
+    T: Add<Output = T>
+        + Div<Output = T>
+        + Mul<Output = T>
+        + Sub<Output = T>
+        + SubAssign
+        + AddAssign
+        + Default
+        + Copy,
+{
+    type Output = Matrix<T, X, Y>;
+    fn sub(self, rhs: Matrix<T, X, Y>) -> Self::Output {
+        let mut output = self.clone();
+        let matrix = output.get_matrix();
+        for x in 0..X {
+            for y in 0..Y {
+                matrix[y][x] = self.inner[y][x] - rhs.inner[y][x];
+            }
+        }
+        output
+    }
+}
+
 impl<T, const X1: usize, const Y1: usize, const X2: usize> Mul<Matrix<T, X2, X1>>
     for Matrix<T, X1, Y1>
 where
@@ -166,6 +190,7 @@ fn main() {
     let b2: Matrix<i32, 2, 3> = Matrix::new([[10, 5], [20, 6], [30, 7]]);
 
     println!("{:?}", b + b2);
+    println!("{:?}", b - b2);
     println!("{}", b[[0, 1]]);
     b[[0, 0]] = 100;
     println!("{}", b[[0, 0]]);
