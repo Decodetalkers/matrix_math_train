@@ -28,6 +28,8 @@ where
     where
         [(); X - 1]:,
     {
+        let input_x = input_x - 1;
+        let input_y = input_y - 1;
         let mut index_y = 0;
         let matrix_inner = self.matrix();
         let mut output = Matrix::empty();
@@ -63,13 +65,12 @@ where
     fn determinant(&self) -> T {
         let mut output = num_traits::zero();
         for x in 0..X {
-            let current = self.cut_index([x, 0]);
+            let current = self.cut_index([x + 1, 1]);
             if x % 2 == 0 {
                 output += current.determinant() * self[[1, x + 1]];
             } else {
                 output -= current.determinant() * self[[1, x + 1]];
             }
-            println!("output is  {output}");
         }
         output
     }
