@@ -53,8 +53,9 @@ where
     T: Num + Default + Copy + AddAssign + SubAssign + Add + Sub + Display + Debug,
 {
     type Output = Matrix<T, X, Y>;
+    #[allow(clippy::needless_range_loop)]
     fn mul(self, rhs: T) -> Self::Output {
-        let mut output = self.clone();
+        let mut output = self;
         let matrix = output.get_matrix();
         for x in 0..X {
             for y in 0..Y {
@@ -70,8 +71,9 @@ where
     T: Num + Default + Copy + AddAssign + SubAssign + Add + Sub + Display + Debug,
 {
     type Output = Matrix<T, X, Y>;
+    #[allow(clippy::needless_range_loop)]
     fn add(self, rhs: Matrix<T, X, Y>) -> Self::Output {
-        let mut output = self.clone();
+        let mut output = self;
         let matrix = output.get_matrix();
         for x in 0..X {
             for y in 0..Y {
@@ -87,8 +89,9 @@ where
     T: Num + Default + Copy + AddAssign + SubAssign + Add + Sub + Display + Debug,
 {
     type Output = Matrix<T, X, Y>;
+    #[allow(clippy::needless_range_loop)]
     fn sub(self, rhs: Matrix<T, X, Y>) -> Self::Output {
-        let mut output = self.clone();
+        let mut output = self;
         let matrix = output.get_matrix();
         for x in 0..X {
             for y in 0..Y {
@@ -105,6 +108,7 @@ where
     T: Num + Default + Copy + AddAssign + SubAssign + Add + Sub + Display + Debug,
 {
     type Output = Matrix<T, X2, Y1>;
+    #[allow(clippy::needless_range_loop)]
     fn mul(self, rhs: Matrix<T, X2, X1>) -> Self::Output {
         let mut output = Matrix::empty();
         let matrix_inner = output.get_matrix();

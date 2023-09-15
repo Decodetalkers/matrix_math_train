@@ -47,7 +47,7 @@ where
     }
     let mut output = num_traits::zero();
     for x in 0..len {
-        let current = cut_index(&matrix_inner, [x, 0]);
+        let current = cut_index(matrix_inner, [x, 0]);
         if x % 2 == 0 {
             output += get_determinant(&current) * matrix_inner[0][x];
         } else {
