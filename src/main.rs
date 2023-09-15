@@ -1,4 +1,12 @@
+#![allow(incomplete_features)]
+#![feature(generic_const_exprs)]
 use std::ops::{Add, AddAssign, Div, Index, IndexMut, Mul, Sub, SubAssign};
+
+pub enum Assert<const CHECK: bool> {}
+
+pub trait IsTrue {}
+
+impl IsTrue for Assert<true> {}
 
 #[derive(Debug, Clone, Copy)]
 struct Matrix<T, const X: usize, const Y: usize>
@@ -13,6 +21,69 @@ where
         + Copy,
 {
     inner: [[T; X]; Y],
+}
+
+impl<T, const X: usize> Matrix<T, X, X>
+where
+    T: Add<Output = T>
+        + Div<Output = T>
+        + Mul<Output = T>
+        + Sub<Output = T>
+        + SubAssign
+        + AddAssign
+        + Default
+        + Copy,
+{
+    fn cut_index(&self, [x, y]: [usize; 2]) -> Matrix<T, { X - 1 }, { X - 1 }>
+    where
+        [(); X - 1]:,
+    {
+        todo!()
+    }
+}
+
+trait Determinant<T> {
+    fn determinant(&self) -> T;
+}
+
+
+impl<const X: usize> Determinant<i64> for Matrix<i64, X, X>
+where
+    Assert<{ X > 2 }>: IsTrue,
+    [(); X - 1]:,
+{
+    fn determinant(&self) -> i64 {
+        let mut output = 0;
+        let matrix = self.matrix();
+
+        for x in 0..X {
+            let current: Matrix<i64, { X - 1 }, { X - 1 }> = Matrix::empty();
+            if x % 2 == 0 {
+                output += (current * self[[0, x]]).determinant();
+            } else {
+                output -= (current * self[[0, x]]).determinant();
+            }
+        }
+        output
+    }
+}
+
+impl Determinant<i64> for Matrix<i64, 0, 0> {
+    fn determinant(&self) -> i64 {
+        0
+    }
+}
+
+impl Determinant<i64> for Matrix<i64, 1, 1> {
+    fn determinant(&self) -> i64 {
+        self[[0, 0]]
+    }
+}
+
+impl Determinant<i64> for Matrix<i64, 2, 2> {
+    fn determinant(&self) -> i64 {
+        self[[0, 0]] * self[[1, 1]] - self[[0, 1]] * self[[1, 0]]
+    }
 }
 
 impl<T, const X: usize, const Y: usize> Matrix<T, X, Y>
@@ -160,9 +231,10 @@ where
 {
     type Output = T;
     fn index(&self, [x, y]: [usize; 2]) -> &Self::Output {
-        assert!(x < X);
-        assert!(y < Y);
-        &self.inner[x][y]
+        assert!(x != 0 && y != 0);
+        assert!(y < y + 1);
+        assert!(x < x + 1);
+        &self.inner[x - 1][y - 1]
     }
 }
 
@@ -178,9 +250,10 @@ where
         + Copy,
 {
     fn index_mut(&mut self, [x, y]: [usize; 2]) -> &mut Self::Output {
-        assert!(x < X);
-        assert!(y < Y);
-        &mut self.inner[x][y]
+        assert!(x != 0 && y != 0);
+        assert!(y < y + 1);
+        assert!(x < x + 1);
+        &mut self.inner[x - 1][y - 1]
     }
 }
 
@@ -188,12 +261,12 @@ fn main() {
     let a: Matrix<i32, 3, 2> = Matrix::new([[1, 2, 3], [4, 5, 6]]);
     let mut b: Matrix<i32, 2, 3> = Matrix::new([[10, 5], [20, 6], [30, 7]]);
     let b2: Matrix<i32, 2, 3> = Matrix::new([[10, 5], [20, 6], [30, 7]]);
-
+    println!("{}", a[[1, 2]]);
     println!("{:?}", b + b2);
     println!("{:?}", b - b2);
-    println!("{}", b[[0, 1]]);
-    b[[0, 0]] = 100;
-    println!("{}", b[[0, 0]]);
+    println!("{}", b[[1, 2]]);
+    b[[1, 1]] = 100;
+    println!("{}", b[[1, 1]]);
     println!("{:?}", b * 20);
     println!("{:?}", b);
 
