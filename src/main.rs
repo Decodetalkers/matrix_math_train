@@ -1,7 +1,7 @@
 #![allow(incomplete_features)]
 #![feature(generic_const_exprs)]
 use num_traits::Num;
-use std::ops::{Add, AddAssign, Index, IndexMut, Mul, Sub};
+use std::ops::{Add, AddAssign, Index, IndexMut, Mul, Sub, SubAssign};
 
 pub enum Assert<const CHECK: bool> {}
 
@@ -12,14 +12,14 @@ impl IsTrue for Assert<true> {}
 #[derive(Debug, Clone, Copy)]
 struct Matrix<T, const X: usize, const Y: usize>
 where
-    T: Num + Default + Copy,
+    T: Num + Default + Copy + AddAssign + SubAssign + Add + Sub,
 {
     inner: [[T; X]; Y],
 }
 
 impl<T, const X: usize> Matrix<T, X, X>
 where
-    T: Num + Default + Copy,
+    T: Num + Default + Copy + AddAssign + SubAssign + Add + Sub,
 {
     fn cut_index(&self, [x, y]: [usize; 2]) -> Matrix<T, { X - 1 }, { X - 1 }>
     where
@@ -33,18 +33,19 @@ trait Determinant<T> {
     fn determinant(&self) -> T;
 }
 
-impl<const X: usize> Determinant<i64> for Matrix<i64, X, X>
+impl<const X: usize, T> Determinant<T> for Matrix<T, X, X>
 where
     Assert<{ X > 2 }>: IsTrue,
-    Matrix<i64, { X - 1 }, { X - 1 }>: Determinant<i64>,
+    Matrix<T, { X - 1 }, { X - 1 }>: Determinant<T>,
     [(); X - 1]:,
+    T: Num + Default + Copy + AddAssign + SubAssign + Add + Sub,
 {
-    fn determinant(&self) -> i64 {
-        let mut output = 0;
+    fn determinant(&self) -> T {
+        let mut output = num_traits::zero();
         let matrix = self.matrix();
 
         for x in 0..X {
-            let current: Matrix<i64, { X - 1 }, { X - 1 }> = Matrix::empty();
+            let current: Matrix<T, { X - 1 }, { X - 1 }> = Matrix::empty();
             if x % 2 == 0 {
                 output += (current * self[[0, x]]).determinant();
             } else {
@@ -57,7 +58,7 @@ where
 
 impl<T> Determinant<T> for Matrix<T, 0, 0>
 where
-    T: Num + Default + Copy,
+    T: Num + Default + Copy + AddAssign + SubAssign + Add + Sub,
 {
     fn determinant(&self) -> T {
         num_traits::zero()
@@ -66,7 +67,7 @@ where
 
 impl<T> Determinant<T> for Matrix<T, 1, 1>
 where
-    T: Num + Default + Copy,
+    T: Num + Default + Copy + AddAssign + SubAssign + Add + Sub,
 {
     fn determinant(&self) -> T {
         self[[0, 0]]
@@ -75,7 +76,7 @@ where
 
 impl<T> Determinant<T> for Matrix<T, 2, 2>
 where
-    T: Num + Default + Copy,
+    T: Num + Default + Copy + AddAssign + SubAssign + Add + Sub,
 {
     fn determinant(&self) -> T {
         self[[0, 0]] * self[[1, 1]] - self[[0, 1]] * self[[1, 0]]
@@ -84,7 +85,7 @@ where
 
 impl<T, const X: usize, const Y: usize> Matrix<T, X, Y>
 where
-    T: Num + Default + Copy,
+    T: Num + Default + Copy + AddAssign + SubAssign + Add + Sub,
 {
     fn empty() -> Self {
         Matrix {
@@ -108,7 +109,7 @@ where
 
 impl<T, const X: usize, const Y: usize> Mul<T> for Matrix<T, X, Y>
 where
-    T: Num + Default + Copy,
+    T: Num + Default + Copy + AddAssign + SubAssign + Add + Sub,
 {
     type Output = Matrix<T, X, Y>;
     fn mul(self, rhs: T) -> Self::Output {
@@ -125,7 +126,7 @@ where
 
 impl<T, const X: usize, const Y: usize> Add<Matrix<T, X, Y>> for Matrix<T, X, Y>
 where
-    T: Num + Default + Copy,
+    T: Num + Default + Copy + AddAssign + SubAssign + Add + Sub,
 {
     type Output = Matrix<T, X, Y>;
     fn add(self, rhs: Matrix<T, X, Y>) -> Self::Output {
@@ -142,7 +143,7 @@ where
 
 impl<T, const X: usize, const Y: usize> Sub<Matrix<T, X, Y>> for Matrix<T, X, Y>
 where
-    T: Num + Default + Copy,
+    T: Num + Default + Copy + AddAssign + SubAssign + Add + Sub,
 {
     type Output = Matrix<T, X, Y>;
     fn sub(self, rhs: Matrix<T, X, Y>) -> Self::Output {
@@ -160,7 +161,7 @@ where
 impl<T, const X1: usize, const Y1: usize, const X2: usize> Mul<Matrix<T, X2, X1>>
     for Matrix<T, X1, Y1>
 where
-    T: Num + Default + Copy + AddAssign,
+    T: Num + Default + Copy + AddAssign + SubAssign + Add + Sub,
 {
     type Output = Matrix<T, X2, Y1>;
     fn mul(self, rhs: Matrix<T, X2, X1>) -> Self::Output {
@@ -181,7 +182,7 @@ where
 
 impl<T, const X: usize, const Y: usize> Index<[usize; 2]> for Matrix<T, X, Y>
 where
-    T: Num + Default + Copy,
+    T: Num + Default + Copy + AddAssign + SubAssign + Add + Sub,
 {
     type Output = T;
     fn index(&self, [x, y]: [usize; 2]) -> &Self::Output {
@@ -194,7 +195,7 @@ where
 
 impl<T, const X: usize, const Y: usize> IndexMut<[usize; 2]> for Matrix<T, X, Y>
 where
-    T: Num + Default + Copy,
+    T: Num + Default + Copy + AddAssign + SubAssign + Add + Sub,
 {
     fn index_mut(&mut self, [x, y]: [usize; 2]) -> &mut Self::Output {
         assert!(x != 0 && y != 0);
