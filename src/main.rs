@@ -5,8 +5,10 @@ use std::ops::{Add, AddAssign, Div, Index, IndexMut, Mul, Sub, SubAssign};
 pub enum Assert<const CHECK: bool> {}
 
 pub trait IsTrue {}
+pub trait IsFalse {}
 
 impl IsTrue for Assert<true> {}
+impl IsFalse for Assert<false> {}
 
 #[derive(Debug, Clone, Copy)]
 struct Matrix<T, const X: usize, const Y: usize>
@@ -46,10 +48,10 @@ trait Determinant<T> {
     fn determinant(&self) -> T;
 }
 
-
 impl<const X: usize> Determinant<i64> for Matrix<i64, X, X>
 where
     Assert<{ X > 2 }>: IsTrue,
+    Matrix<i64, { X - 1 }, { X - 1 }>: Determinant<i64>,
     [(); X - 1]:,
 {
     fn determinant(&self) -> i64 {
