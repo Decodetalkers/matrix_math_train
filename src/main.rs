@@ -1,5 +1,7 @@
 #![allow(incomplete_features)]
 #![feature(generic_const_exprs)]
+mod innerhandle;
+use innerhandle::get_determinant;
 use num_traits::Num;
 use std::{
     fmt::{Debug, Display},
@@ -24,82 +26,9 @@ impl<T, const X: usize> Matrix<T, X, X>
 where
     T: Num + Default + Copy + AddAssign + SubAssign + Add + Sub + Display + Debug,
 {
-    fn cut_index(&self, [input_x, input_y]: [usize; 2]) -> Matrix<T, { X - 1 }, { X - 1 }>
-    where
-        [(); X - 1]:,
-    {
-        let input_x = input_x - 1;
-        let input_y = input_y - 1;
-        let mut index_y = 0;
-        let matrix_inner = self.matrix();
-        let mut output = Matrix::empty();
-        for (y, line) in matrix_inner.iter().enumerate() {
-            if y == input_y {
-                continue;
-            }
-            index_y += 1;
-            let mut index_x = 0;
-            for (x, element) in line.iter().enumerate() {
-                if x == input_x {
-                    continue;
-                }
-                index_x += 1;
-                output[[index_y, index_x]] = *element;
-            }
-        }
-        output
-    }
-}
-
-trait Determinant<T> {
-    fn determinant(&self) -> T;
-}
-
-impl<const X: usize, T> Determinant<T> for Matrix<T, X, X>
-where
-    Assert<{ X > 2 }>: IsTrue,
-    Matrix<T, { X - 1 }, { X - 1 }>: Determinant<T>,
-    [(); X - 1]:,
-    T: Num + Default + Copy + AddAssign + SubAssign + Add + Sub + Display + Debug,
-{
     fn determinant(&self) -> T {
-        let mut output = num_traits::zero();
-        for x in 0..X {
-            let current = self.cut_index([x + 1, 1]);
-            if x % 2 == 0 {
-                output += current.determinant() * self[[1, x + 1]];
-            } else {
-                output -= current.determinant() * self[[1, x + 1]];
-            }
-        }
-        output
-    }
-}
-
-impl<T> Determinant<T> for Matrix<T, 0, 0>
-where
-    T: Num + Default + Copy + AddAssign + SubAssign + Add + Sub + Display + Debug,
-{
-    fn determinant(&self) -> T {
-        num_traits::zero()
-    }
-}
-
-impl<T> Determinant<T> for Matrix<T, 1, 1>
-where
-    T: Num + Default + Copy + AddAssign + SubAssign + Add + Sub + Display + Debug,
-{
-    fn determinant(&self) -> T {
-        self[[1, 1]]
-    }
-}
-
-impl<T> Determinant<T> for Matrix<T, 2, 2>
-where
-    T: Num + Default + Copy + AddAssign + SubAssign + Add + Sub + Display + Debug,
-{
-    fn determinant(&self) -> T {
-        self[[1, 1]] * self[[2, 2]] - self[[1, 2]] * self[[2, 1]]
+        let matrix_inner = self.matrix().map(|list| list.to_vec()).to_vec();
+        get_determinant(&matrix_inner)
     }
 }
 
