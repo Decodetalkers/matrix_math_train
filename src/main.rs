@@ -6,12 +6,6 @@ use std::{
     ops::{Add, AddAssign, Index, IndexMut, Mul, Sub, SubAssign},
 };
 
-pub enum Assert<const CHECK: bool> {}
-
-pub trait IsTrue {}
-
-impl IsTrue for Assert<true> {}
-
 #[derive(Debug, Clone, Copy)]
 struct Matrix<T, const X: usize, const Y: usize>
 where
@@ -171,4 +165,6 @@ fn main() {
     println!("{}", e.determinant());
     let f: Matrix<i32, 3, 3> = Matrix::new([[1, 0, 3], [-1, -1, -3], [0, 0, 6]]);
     println!("{}", f.determinant());
+    let n: Matrix<i32, 10, 10> = Matrix::empty();
+    println!("{}", n.determinant());
 }
