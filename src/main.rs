@@ -1,5 +1,3 @@
-#![allow(incomplete_features)]
-#![feature(generic_const_exprs)]
 mod innerhandle;
 use innerhandle::get_determinant;
 use num_traits::Num;
